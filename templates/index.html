@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Electrobtech AI Chatbot</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f4f4;
+        }
+
+        #chat-container {
+            width: 350px;
+            margin: 50px auto;
+            background: white;
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 0 10px gray;
+        }
+
+        #chatbox {
+            height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .user {
+            text-align: right;
+            margin: 5px;
+        }
+
+        .bot {
+            text-align: left;
+            margin: 5px;
+        }
+
+        .bubble {
+            display: inline-block;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 70%;
+        }
+
+        .user .bubble {
+            background: #007bff;
+            color: white;
+        }
+
+        .bot .bubble {
+            background: #e5e5ea;
+        }
+
+        #input-area {
+            display: flex;
+            margin-top: 10px;
+        }
+
+        #userInput {
+            flex: 1;
+            padding: 10px;
+        }
+
+        button {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        #typing {
+            font-size: 12px;
+            color: gray;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="chat-container">
+    <h3>🤖 Electrobtech Chatbot</h3>
+
+    <div id="chatbox"></div>
+
+    <div id="typing">Bot is typing...</div>
+
+    <div id="input-area">
+        <input type="text" id="userInput" placeholder="Type message..." onkeypress="handleKey(event)">
+        <button onclick="sendMessage()">Send</button>
+        <button onclick="clearChat()">Clear</button>
+    </div>
+</div>
+
+<script>
+function appendMessage(text, sender) {
+    let chatbox = document.getElementById("chatbox");
+
+    let msgDiv = document.createElement("div");
+    msgDiv.className = sender;
+
+    let bubble = document.createElement("div");
+    bubble.className = "bubble";
+    bubble.innerText = text;
+
+    msgDiv.appendChild(bubble);
+    chatbox.appendChild(msgDiv);
+
+    chatbox.scrollTop = chatbox.scrollHeight; // auto scroll
+}
+
+function sendMessage() {
+    let input = document.getElementById("userInput");
+    let userText = input.value.trim();
+
+    if (userText === "") return;
+
+    appendMessage(userText, "user");
+    input.value = "";
+
+    document.getElementById("typing").style.display = "block";
+
+    fetch("/chat", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({message: userText})
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById("typing").style.display = "none";
+        appendMessage(data.response, "bot");
+    });
+}
+
+function handleKey(event) {
+    if (event.key === "Enter") {
+        sendMessage();
+    }
+}
+
+function clearChat() {
+    document.getElementById("chatbox").innerHTML = "";
+}
+</script>
+
+</body>
+</html>
